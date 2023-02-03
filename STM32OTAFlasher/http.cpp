@@ -78,11 +78,13 @@ http_flush (void)
  * send http header
  *----------------------------------------------------------------------------------------------------------------------------------------
  */
+#if 0 // not used
 static void
 http_header (void)
 {
     http_send ("HTTP/1.0 200 OK\r\n\r\n");
 }
+#endif
 
 /*----------------------------------------------------------------------------------------------------------------------------------------
  * send html header
@@ -99,6 +101,10 @@ html_header (String title, String url, bool use_utf8)
     String flash_color    = "blue";
 
     if (url.equals ("/"))
+    {
+        network_color = "red";
+    }
+    else if (url.equals ("/net"))
     {
         network_color = "red";
     }
@@ -127,7 +133,13 @@ html_header (String title, String url, bool use_utf8)
         sResponse += (String) "<meta charset='ISO-8859-1'>";
     }
     sResponse += (String) "<title>";
-    sResponse += (String) title;
+    sResponse += (String) "STM32OTAFlasher";
+
+    if (! title.equals (""))
+    {
+        sResponse += (String) " - " + title;
+    }
+
     sResponse += (String) "</title>\r\n";
     sResponse += (String) "<meta name='viewport' content='width=device-width,initial-scale=1'/>\r\n";
     sResponse += (String) "<style>\r\n";
@@ -138,15 +150,19 @@ html_header (String title, String url, bool use_utf8)
     sResponse += (String) "\r\n";
     sResponse += (String) "<table>\r\n";
     sResponse += (String) "<tr>\r\n";
-    sResponse += (String) "<td style='padding:5px;'><a style='color:" + network_color + ";' href='/'>Network</a></td>\r\n";
+    sResponse += (String) "<td style='padding:5px;'><a style='color:" + network_color + ";' href='/net'>Network</a></td>\r\n";
     sResponse += (String) "<td style='padding:5px;'><a style='color:" + update_color  + ";' href='/upd'>Update ESP8266</a></td>\r\n";
     sResponse += (String) "<td style='padding:5px;'><a style='color:" + upload_color  + ";' href='/upl'>Upload File</a></td>\r\n";
     sResponse += (String) "<td style='padding:5px;'><a style='color:" + flash_color   + ";' href='/flash'>Flash STM32</a></td>\r\n";
     sResponse += (String) "</tr>\r\n";
     sResponse += (String) "</table>\r\n";
-    sResponse += (String) "<H3>";
-    sResponse += (String) title;
-    sResponse += (String) "</H3>\r\n";
+
+    if (! title.equals (""))
+    {
+        sResponse += (String) "<H3 style='margin-left:10px'>";
+        sResponse += (String) title;
+        sResponse += (String) "</H3>\r\n";
+    }
 }
 
 /*----------------------------------------------------------------------------------------------------------------------------------------
@@ -346,7 +362,20 @@ handle_doupload ()
 }
 
 void
-handle_main()
+handle_main ()
+{
+    String    title   = "";
+    String    url     = "/";
+
+    html_header (title, url, false);
+
+    sResponse += "<H3 style='margin-left:10px'>Welcome to STM32 OTA Flasher!</H3>";
+    html_trailer ();
+    httpServer.send(200, "text/html", sResponse);
+}
+
+void
+handle_net()
 {
     String    title   = "Network";
     String    url     = "/";
@@ -531,42 +560,36 @@ handle_flash ()
 {
     String    title       = "Flash STM32";
     String    url         = "/flash";
-    const char * fname    = (const char *) NULL;
     String    action      = httpServer.arg("action");
 
     html_header (title, url, false);
+    httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);        // unknown length of output
+    httpServer.send(200, "text/html", sResponse);               // send header part
+    sResponse = "";
+
     sResponse += F("<P>\r\n");
     sResponse += (String) "<div style='margin:10px;padding:10px;border:1px lightgray solid; width:360px;'>\r\n";
     show_directory (action, url, false);
     sResponse += (String) "</div>\r\n";
-    sResponse += (String) "<form method='POST' action='" + url + "' enctype='multipart/form-data'>\r\n";
-    sResponse += (String) "<P><button type='submit' name=\"action\" value=\"reset\">Reset STM32</button>\r\n";
-    sResponse += (String) "</form>\r\n";
 
     if (action.equals ("flash"))
     {
         String fname = httpServer.arg("fname");
 
         sResponse += (String) "<BR>\r\n";
-        httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);    // unknown length of output
-        httpServer.send(200, "text/html", sResponse);           // send header part
-        sResponse = "";
-
         stm32_flash_from_local (fname);
-        html_trailer ();                                        // send trailer part
-        http_flush ();
-        httpServer.sendContent("");                             // EOF: empty line
     }
-    else
+    else if (action.equals ("reset"))
     {
-        html_trailer ();
-        httpServer.send(200, "text/html", sResponse);
-
-        if (action.equals ("reset"))
-        {
-            stm32_reset ();
-        }
+        stm32_reset ();
     }
+
+    sResponse += (String) "<form method='GET' action='" + url + "'>\r\n";
+    sResponse += (String) "<P><button type='submit' name=\"action\" value=\"reset\">Reset STM32</button>\r\n";
+    sResponse += (String) "</form>\r\n";
+    html_trailer ();                                        // send trailer part
+    http_flush ();
+    httpServer.sendContent("");                             // EOF: empty line
 }
 
 
@@ -582,6 +605,7 @@ http_setup (void)
     httpUpdater.setup(&httpServer);
     httpServer.begin();
     httpServer.on("/", handle_main);
+    httpServer.on("/net", handle_net);
     httpServer.on("/upd", handle_upd);
     httpServer.on("/upl", handle_upl);
     httpServer.on("/flash", handle_flash);

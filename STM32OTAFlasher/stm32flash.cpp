@@ -68,17 +68,17 @@
 #define STM32_CMD_READOUT_UNPROTECT         0x92    // disables the read protection
 
 #define STM32_INFO_BOOTLOADER_VERSION_IDX   0       // Bootloader version (0 < Version < 255), example: 0x10 = Version 1.0
-#define STM32_INFO_GET_CMD_IDX              1       // 0x00 – Get command
-#define STM32_INFO_GET_VERSION_CMD_IDX      2       // 0x01 – Get Version and Read Protection Status
-#define STM32_INFO_GET_ID_CMD_IDX           3       // 0x02 – Get ID
-#define STM32_INFO_READ_MEMORY_CMD_IDX      4       // 0x11 – Read Memory command
-#define STM32_INFO_GO_CMD_IDX               5       // 0x21 – Go command
-#define STM32_INFO_WRITE_MEMORY_CMD_IDX     6       // 0x31 – Write Memory command
+#define STM32_INFO_GET_CMD_IDX              1       // 0x00 - Get command
+#define STM32_INFO_GET_VERSION_CMD_IDX      2       // 0x01 - Get Version and Read Protection Status
+#define STM32_INFO_GET_ID_CMD_IDX           3       // 0x02 - Get ID
+#define STM32_INFO_READ_MEMORY_CMD_IDX      4       // 0x11 - Read Memory command
+#define STM32_INFO_GO_CMD_IDX               5       // 0x21 - Go command
+#define STM32_INFO_WRITE_MEMORY_CMD_IDX     6       // 0x31 - Write Memory command
 #define STM32_INFO_ERASE_CMD_IDX            7       // 0x43 or 0x44 - Erase command or Extended Erase command
-#define STM32_INFO_WRITE_PROTECT_CMD_IDX    8       // 0x63 – Write Protect command
-#define STM32_INFO_WRITE_UNPROTECT_CMD_IDX  9       // 0x73 – Write Unprotect command
-#define STM32_INFO_READOUT_PROTECT          10      // 0x82 – Readout Protect command
-#define STM32_INFO_READOUT_UNPROTECT        11      // 0x92 – Readout Unprotect command
+#define STM32_INFO_WRITE_PROTECT_CMD_IDX    8       // 0x63 - Write Protect command
+#define STM32_INFO_WRITE_UNPROTECT_CMD_IDX  9       // 0x73 - Write Unprotect command
+#define STM32_INFO_READOUT_PROTECT          10      // 0x82 - Readout Protect command
+#define STM32_INFO_READOUT_UNPROTECT        11      // 0x92 - Readout Unprotect command
 #define STM32_INFO_SIZE                     12      // number of bytes in INFO array
 
 static uint8_t                              bootloader_info[STM32_INFO_SIZE];
@@ -902,8 +902,8 @@ stm32_flash_image (String fname, bool do_flash)
                             {
                                 if (last_address && last_address + 1 != ulba + drlo + dri)
                                 {
-                                    sprintf (logbuf, "Info: gap in line %d, addr 0x%08X. This is normal.\r\n", line, ulba + drlo + dri);
-                                    http_send (logbuf);
+                                    // sprintf (logbuf, "Info: gap in line %d, addr 0x%08X. This is normal.\r\n", line, ulba + drlo + dri);
+                                    // http_send (logbuf);
                                 }
                                 last_address = ulba + drlo + dri;
                             }

@@ -63,7 +63,7 @@ static void
 eeprom_read_entry (char * target, int offset, int len)
 {
     int   i;
-  
+
     for (i = 0; i < len; i++)
     {
         target[i] = EEPROM.read(offset + i);
@@ -82,7 +82,7 @@ static void
 eeprom_write_entry (char * src, int offset, int len)
 {
     int   i;
-  
+
     for (i = 0; i < len; i++)
     {
         EEPROM.write(offset + i, src[i]);
@@ -103,7 +103,7 @@ eeprom_write_byte (uint8_t src, int offset)
 static void
 eeprom_save_magic (void)
 {
-    strncpy (eeprom_magic, EEPROM_MAGIC_CONTENT, EEPROM_MAGIC_LEN);
+    memcpy (eeprom_magic, EEPROM_MAGIC_CONTENT, EEPROM_MAGIC_LEN);
     eeprom_write_entry (eeprom_magic, EEPROM_MAGIC_OFFSET, EEPROM_MAGIC_LEN);
     eeprom_changed = true;
 }
@@ -221,7 +221,6 @@ format_eeprom (void)
 void
 eeprom_read (void)
 {
-    int i;
     int n_version;
 
     eeprom_read_entry (eeprom_magic, EEPROM_MAGIC_OFFSET, EEPROM_MAGIC_LEN);
@@ -234,11 +233,11 @@ eeprom_read (void)
     else
     {
         eeprom_read_entry (eeprom_version, EEPROM_VERSION_OFFSET, EEPROM_VERSION_LEN);
-    
+
         n_version = atoi (eeprom_version);
         Serial.print ("EEPROM version: ");
         Serial.println (n_version);
-    
+
         if (n_version >= 100 && n_version < 200)                                                        // 1.0.0 to 1.9.9
         {
             eeprom_read_entry (eeprom_ssid, EEPROM_SSID_OFFSET, EEPROM_SSID_LEN);
